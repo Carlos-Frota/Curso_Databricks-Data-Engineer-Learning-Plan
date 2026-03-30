@@ -1,0 +1,63 @@
+resources:
+  jobs:
+    jb_lab_pyspark_modularized_code:
+      name: jb_lab_pyspark_modularized_code
+      schedule:
+        quartz_cron_expression: 44 0 7 * * ?
+        timezone_id: America/Sao_Paulo
+        pause_status: PAUSED
+      tasks:
+        - task_key: tk_bronze_customers
+          notebook_task:
+            notebook_path: /Workspace/Repos/user/DataBricks-Courses/DataBricks - Data Engineer Learning Plan/Lab - PySpark Modularized Code/PySpark_Modularized_Code_Bronze
+            base_parameters:
+              path_origem_param: /Volumes/workspace/estudos/csvs/
+              catalogo_param: workspace
+              schema_param: estudos
+              arquivo_param: customers.csv
+            source: WORKSPACE
+        - task_key: tk_bronze_products
+          notebook_task:
+            notebook_path: /Workspace/Repos/user/DataBricks-Courses/DataBricks - Data Engineer Learning Plan/Lab - PySpark Modularized Code/PySpark_Modularized_Code_Bronze
+            base_parameters:
+              path_origem_param: /Volumes/workspace/estudos/csvs/
+              catalogo_param: workspace
+              schema_param: estudos
+              arquivo_param: products.csv
+            source: WORKSPACE
+        - task_key: tk_silver_customers
+          depends_on:
+            - task_key: tk_bronze_customers
+          notebook_task:
+            notebook_path: /Workspace/Repos/user/DataBricks-Courses/DataBricks - Data Engineer Learning Plan/Lab - PySpark Modularized Code/PySpark_Modularized_Code_Silver
+            base_parameters:
+              catalogo_param: workspace
+              schema_param: estudos
+              layer_param: silver
+              arquivo_param: customers
+            source: WORKSPACE
+        - task_key: tk_gold_customers
+          depends_on:
+            - task_key: tk_silver_customers
+            - task_key: tk_silver_products
+          notebook_task:
+            notebook_path: /Workspace/Repos/user/DataBricks-Courses/DataBricks - Data Engineer Learning Plan/Lab - PySpark Modularized Code/PySpark_Modularized_Code_Gold
+            base_parameters:
+              catalogo_param: workspace
+              schema_param: estudos
+              layer_param: gold
+            source: WORKSPACE
+        - task_key: tk_silver_products
+          depends_on:
+            - task_key: tk_bronze_products
+          notebook_task:
+            notebook_path: /Workspace/Repos/user/DataBricks-Courses/DataBricks - Data Engineer Learning Plan/Lab - PySpark Modularized Code/PySpark_Modularized_Code_Silver
+            base_parameters:
+              catalogo_param: workspace
+              schema_param: estudos
+              layer_param: silver
+              arquivo_param: products
+            source: WORKSPACE
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
